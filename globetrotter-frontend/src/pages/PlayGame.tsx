@@ -99,16 +99,16 @@ const PlayGame = () => {
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 text-gray-800">
       <div className="absolute inset-0 pointer-events-none opacity-10">
-        <img
-          src="/assets/world-map.svg"
+        {/* <img
+          src="./globetrotter-frontend/src/assets/paper-plane.svg"
           alt="world map"
           className="absolute top-10 left-1/2 w-[900px] -translate-x-1/2"
         />
         <img
-          src="/assets/paper-plane.svg"
+          src="./assets/paper-plane.svg"
           alt="plane"
           className="absolute bottom-0 right-0 w-60 animate-float"
-        />
+        /> */}
       </div>
 
       {/* Challenge a Friend Button */}
@@ -117,14 +117,26 @@ const PlayGame = () => {
       </div>
 
       <header className="bg-gradient-to-r from-purple-800 to-indigo-800 text-white py-6 shadow-xl relative z-10">
-        <div className="container mx-auto text-center">
-          <h1 className="text-4xl font-extrabold tracking-wide drop-shadow-md">
-            🌍 Globetrotter Challenge
-          </h1>
-          {username && <p className="text-lg mt-2 text-gray-200">Welcome, {username}!</p>}
-          <p className="text-lg mt-2 text-gray-200">
-            Test your knowledge of famous destinations!
-          </p>
+        <div className="container mx-auto flex justify-between items-center">
+          <div className="text-center">
+            <h1 className="text-4xl font-extrabold tracking-wide drop-shadow-md">
+              🌍 Globetrotter Challenge
+            </h1>
+            {username && <p className="text-lg mt-2 text-gray-200">Welcome, {username}!</p>}
+            <p className="text-lg mt-2 text-gray-200">
+              Test your knowledge of famous destinations!
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              localStorage.removeItem('username'); // Clear username from local storage
+              setUsername(null); // Clear username state
+              window.location.href = '/'; // Redirect to homepage or login page
+            }}
+            className="px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-all duration-300"
+          >
+            Logout
+          </button>
         </div>
       </header>
 
@@ -206,8 +218,18 @@ const PlayGame = () => {
                   Next Question
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     setScore({ correct: 0, incorrect: 0 });
+                    if (username) {
+                      try {
+                        await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/users/${username}/score`, {
+                          correctScore: 0,
+                          incorrectScore: 0,
+                        });
+                      } catch (error) {
+                        console.error('Error resetting score on backend:', error);
+                      }
+                    }
                     loadNewDestination();
                   }}
                   className="px-6 py-3 bg-red-500 text-white rounded-xl shadow-lg hover:bg-red-600 transition-all duration-300"

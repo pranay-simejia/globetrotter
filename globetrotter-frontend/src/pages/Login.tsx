@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import styles from './Login.module.css'; // Import CSS module
+import styles from './Login.module.css'; // 👈 import CSS module
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -27,17 +27,21 @@ const Login = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Welcome to Globetrotter</h1>
-      <form onSubmit={handleSubmit} className={styles.form}>
+    <div className={styles['login-container']}>
+      <h1 className={styles['login-title']}>
+        Welcome to <br />
+        <span>Globetrotter</span>
+      </h1>
+
+      <form onSubmit={handleSubmit} className={styles['login-form']}>
         <input
           type="text"
           placeholder="Enter your username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className={styles.input}
+          className={styles['login-input']}
         />
-        <button type="submit" className={styles.button}>
+        <button type="submit" className={styles['login-button']}>
           Start Game
         </button>
       </form>
