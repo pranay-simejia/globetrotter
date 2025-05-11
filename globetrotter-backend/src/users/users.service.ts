@@ -26,7 +26,6 @@ export class UsersService {
   }
 
   async updateUserScore(username: string, score: {correctScore:number,incorrectScore:number }): Promise<User> {
-    console.log("score",score)
     const user = await this.userRepository.findOne({ where: { username } });
     if (!user) {
       throw new Error('User not found');

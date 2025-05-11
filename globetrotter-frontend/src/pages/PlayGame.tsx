@@ -2,14 +2,13 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Confetti from 'react-confetti';
 import { motion } from 'framer-motion';
+import ChallengeFriend from '../components/ChallengeFriend'; // Import the ChallengeFriend component
 
 type Destination = {
-  city: string;
-  country: string;
+  id: number;
   clues: string[];
-  funFacts: string[];
-  trivia: string[];
   options: string[];
+  funFacts: string[]; // Add funFacts field
 };
 
 const PlayGame = () => {
@@ -28,13 +27,13 @@ const PlayGame = () => {
 
   const loadNewDestination = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/destinations`);
-      const destinations = response.data;
-      const randomIndex = Math.floor(Math.random() * destinations.length);
-      setDestination(destinations[randomIndex]);
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/destinations/random`);
+      const destination = response.data;
+
+      setDestination(destination); // Set the destination with options
       resetGameState();
     } catch (error) {
-      console.error('Error fetching destinations:', error);
+      console.error('Error fetching random destination:', error);
     }
   };
 
@@ -42,7 +41,7 @@ const PlayGame = () => {
     try {
       const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/users/${username}/score`);
       const { correctScore = 0, incorrectScore = 0 } = response.data; // Default to 0 if undefined
-      setScore({ correct:correctScore, incorrect:incorrectScore });
+      setScore({ correct: correctScore, incorrect: incorrectScore });
     } catch (error) {
       console.error('Error fetching score:', error);
     }
@@ -52,7 +51,7 @@ const PlayGame = () => {
     if (!username) return;
     try {
       let score = { correctScore: updatedScore.correct, incorrectScore: updatedScore.incorrect };
-      await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/users/${username}/score`,score);
+      await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/users/${username}/score`, score);
     } catch (error) {
       console.error('Error updating score:', error);
     }
@@ -60,32 +59,34 @@ const PlayGame = () => {
 
   const handleGuess = async (guess: string) => {
     if (!destination) return;
+    
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/destinations/validate`, {
+        destinationId: destination.id,
+        selectedAnswer: guess,
+      });
 
-    const correctAnswer = `${destination.city}, ${destination.country}`;
-    const isAnswerCorrect = guess === correctAnswer;
+      const { isCorrect, funFacts } = response.data; // Include funFacts from the backend
+      setDestination((prev) => (prev ? { ...prev, funFacts } : null)); // Update destination with fun facts
+      setSelected(guess);
+      setIsCorrect(isCorrect);
 
-    setSelected(guess);
-    setIsCorrect(isAnswerCorrect);
+      const updatedScore = {
+        correct: score.correct + (isCorrect ? 1 : 0),
+        incorrect: score.incorrect + (!isCorrect ? 1 : 0),
+      };
 
-    const updatedScore = {
-      correct: score.correct + (isAnswerCorrect ? 1 : 0),
-      incorrect: score.incorrect + (!isAnswerCorrect ? 1 : 0),
-    };
+      setScore(updatedScore);
+      await updateScoreBackend(updatedScore);
 
-    setScore(updatedScore);
-    console.log('Updated Score:', updatedScore);
-    await updateScoreBackend(updatedScore);
+    } catch (error) {
+      console.error('Error validating answer:', error);
+    }
   };
 
   const resetGameState = () => {
     setSelected(null);
     setIsCorrect(null);
-  };
-
-  const handleChallengeFriend = () => {
-    const shareableLink = `${window.location.origin}/play?challenge=true`;
-    navigator.clipboard.writeText(shareableLink);
-    alert('Challenge link copied to clipboard! Share it with your friend.');
   };
 
   if (!destination)
@@ -110,6 +111,11 @@ const PlayGame = () => {
         />
       </div>
 
+      {/* Challenge a Friend Button */}
+      <div className="absolute top-6 right-6 z-50">
+        <ChallengeFriend username={username} score={score} />
+      </div>
+
       <header className="bg-gradient-to-r from-purple-800 to-indigo-800 text-white py-6 shadow-xl relative z-10">
         <div className="container mx-auto text-center">
           <h1 className="text-4xl font-extrabold tracking-wide drop-shadow-md">
@@ -125,7 +131,7 @@ const PlayGame = () => {
       <main className="flex-grow flex flex-col items-center justify-center p-6 relative z-10">
         {isCorrect && <Confetti />}
 
-        <div className="absolute top-6 right-6 bg-white/80 backdrop-blur-md rounded-xl px-6 py-4 shadow-lg border border-purple-200">
+        <div className="absolute top-6 left-6 bg-white/80 backdrop-blur-md rounded-xl px-6 py-4 shadow-lg border border-purple-200">
           <p className="text-lg font-bold text-purple-800">Score</p>
           <p className="text-green-600 font-semibold">✅ Correct: {score.correct}</p>
           <p className="text-red-500 font-semibold">❌ Incorrect: {score.incorrect}</p>
@@ -179,7 +185,9 @@ const PlayGame = () => {
                 }`}
               >
                 {isCorrect ? '🎉 Correct!' : '😢 Nope!'}
-                <span className="block mt-2 text-base">Fun fact: {destination.funFacts[0]}</span>
+                <span className="block mt-2 text-base text-gray-700">
+                    Fun fact: {destination.funFacts[0]}
+                  </span>
               </div>
 
               <div className="flex justify-center gap-6 mt-8">
@@ -205,12 +213,6 @@ const PlayGame = () => {
                   className="px-6 py-3 bg-red-500 text-white rounded-xl shadow-lg hover:bg-red-600 transition-all duration-300"
                 >
                   Reset Game
-                </button>
-                <button
-                  onClick={handleChallengeFriend}
-                  className="px-6 py-3 bg-blue-500 text-white rounded-xl shadow-lg hover:bg-blue-600 transition-all duration-300"
-                >
-                  Challenge a Friend
                 </button>
               </div>
             </motion.div>

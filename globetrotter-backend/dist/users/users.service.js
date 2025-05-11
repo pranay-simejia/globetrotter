@@ -34,7 +34,6 @@ let UsersService = class UsersService {
         return this.userRepository.findOne({ where: { username } });
     }
     async updateUserScore(username, score) {
-        console.log("score", score);
         const user = await this.userRepository.findOne({ where: { username } });
         if (!user) {
             throw new Error('User not found');

@@ -23,7 +23,7 @@ export class UsersController {
   async updateUserScore(
     @Param('username') username: string,
     @Body() score: { correctScore: number, incorrectScore: number },
-  ) {   console.log("score",score)
+  ) { 
     return this.usersService.updateUserScore(username.trim(), score);
   }
 

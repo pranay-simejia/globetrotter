@@ -11,4 +11,16 @@ export declare class DestinationsController {
         funFacts: string[];
         trivia: string[];
     }[]>;
+    getRandomDestinationWithOptions(): Promise<{
+        id: number;
+        clues: string[];
+        options: string[];
+    }>;
+    validateAnswer(body: {
+        destinationId: number;
+        selectedAnswer: string;
+    }): Promise<{
+        isCorrect: boolean;
+        funFacts: string[];
+    }>;
 }

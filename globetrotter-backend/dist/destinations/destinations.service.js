@@ -38,6 +38,42 @@ let DestinationsService = class DestinationsService {
             throw new Error(`Failed to fetch destinations: ${error.message}`);
         }
     }
+    async getRandomDestinationWithOptions() {
+        const correctDestination = await this.destinationRepository
+            .createQueryBuilder('destination')
+            .orderBy('RANDOM()')
+            .getOne();
+        if (!correctDestination) {
+            throw new Error('No destinations found in the database.');
+        }
+        const incorrectDestinations = await this.destinationRepository
+            .createQueryBuilder('destination')
+            .where('id != :id', { id: correctDestination.id })
+            .orderBy('RANDOM()')
+            .limit(3)
+            .getMany();
+        const options = [
+            ...incorrectDestinations.map((dest) => `${dest.city}, ${dest.country}`),
+            `${correctDestination.city}, ${correctDestination.country}`,
+        ].sort(() => Math.random() - 0.5);
+        return {
+            id: correctDestination.id,
+            clues: correctDestination.clues,
+            options,
+        };
+    }
+    async validateAnswer(destinationId, selectedAnswer) {
+        const destination = await this.destinationRepository.findOne({ where: { id: destinationId } });
+        if (!destination) {
+            throw new Error('Destination not found.');
+        }
+        const correctAnswer = `${destination.city}, ${destination.country}`;
+        const isCorrect = selectedAnswer === correctAnswer;
+        return {
+            isCorrect,
+            funFacts: destination.funFacts,
+        };
+    }
     getRandomIncorrectOptions(destinations, correctOption) {
         const otherDestinations = destinations.filter((dest) => `${dest.city}, ${dest.country}` !== correctOption);
         const shuffled = otherDestinations.sort(() => Math.random() - 0.5);

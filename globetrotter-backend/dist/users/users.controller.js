@@ -31,7 +31,6 @@ let UsersController = class UsersController {
         return this.usersService.createUser(username.trim());
     }
     async updateUserScore(username, score) {
-        console.log("score", score);
         return this.usersService.updateUserScore(username.trim(), score);
     }
     async getUserScore(username) {
