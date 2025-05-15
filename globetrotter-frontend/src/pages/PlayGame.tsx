@@ -18,6 +18,7 @@ const PlayGame = () => {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [score, setScore] = useState<{ correct: number; incorrect: number }>({ correct: 0, incorrect: 0 });
   const [username, setUsername] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const storedUsername = localStorage.getItem('username');
@@ -27,6 +28,7 @@ const PlayGame = () => {
   }, []);
 
   const loadNewDestination = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/destinations/random`);
       setDestination(response.data);
@@ -34,6 +36,7 @@ const PlayGame = () => {
     } catch (error) {
       console.error('Error fetching random destination:', error);
     }
+    setLoading(false);
   };
 
   const fetchScore = async (username: string) => {
@@ -87,6 +90,15 @@ const PlayGame = () => {
     setSelected(null);
     setIsCorrect(null);
   };
+
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <span className={styles.spinner}></span>
+        Loading...
+      </div>
+    );
+  }
 
   if (!destination) {
     return (

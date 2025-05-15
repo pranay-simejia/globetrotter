@@ -184,14 +184,17 @@
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: left;
-  backdrop-filter: blur(5px);
+  /* backdrop-filter: blur(5px); */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  color: black;
 }
 
 .option:hover {
   transform: translateY(-3px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   border-color: #a29bfe;
+  color: black;
+
 }
 
 .option.correct {
@@ -303,4 +306,20 @@
 
 .gameCard::-webkit-scrollbar-thumb:hover {
   background: rgba(108, 92, 231, 0.7);
+}
+
+.spinner {
+  border: 4px solid #eee;
+  border-top: 4px solid #6c5ce7;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg);}
+  100% { transform: rotate(360deg);}
 }
